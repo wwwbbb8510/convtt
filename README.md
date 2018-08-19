@@ -1,2 +1,2 @@
 # convtt
-Convolutional Neural Netowork Training Tools
+Convolutional Neural Netoworks Training Tools
