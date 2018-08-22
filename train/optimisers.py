@@ -14,7 +14,7 @@ class BaseOptimiserWrapper(object):
         Initialise
         :param model: the network model
         :type model: Module
-        :param kwargs: the kye-value parameters that are passed to the specific optimisers
+        :param kwargs: the key-value parameters that are passed to the specific optimisers
         """
         self._model = model
         self._optimiser = None

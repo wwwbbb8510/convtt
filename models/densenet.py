@@ -253,7 +253,7 @@ class DenseNet(nn.Module):
         """
         kernel_size, stride, padding = 7, 1, 0
         if self.image_shape[1] < 128:
-            kernel_size, stride, padding = 8, 1, 1
+            kernel_size, stride, padding = 8, 1, 0
         return kernel_size, stride, padding
 
     def _calculate_image_size(self, width, height, padding_num, kernel_size, stride_size):

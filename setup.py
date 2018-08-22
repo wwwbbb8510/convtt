@@ -16,6 +16,7 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     scripts=[
         'convtt/bin/convtt_train_densenet.py',
+        'convtt/bin/convtt_train_dynamicnet.py',
     ],
     classifiers=(
         "Programming Language :: Python :: 3",
