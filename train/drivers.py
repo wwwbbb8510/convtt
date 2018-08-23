@@ -236,7 +236,7 @@ class TorchDriver(BaseDriver):
             outputs = self.model(images)
             _, predicted = torch.max(outputs.data, 1)
             total = labels.size(0)
-            correct = (predicted == labels).sum()
+            correct = (predicted.type(torch.LongTensor) == labels.type(torch.LongTensor)).sum()
             acc_list.append(correct / total)
         # set model back to training mode
         self.model.train()
