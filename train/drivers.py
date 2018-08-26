@@ -169,6 +169,9 @@ class TorchDriver(BaseDriver):
         self._test_loader = None
         self._test_batch_size = None
 
+        # enable specified gpus
+        if self.gpu_ids is not None:
+            os.environ['CUDA_VISIBLE_DEVICES'] = '{}'.format(self.gpu_ids)
         # check whether to use cuda
         self._use_cuda = torch.cuda.is_available() and self.gpu_ids is not None
 
