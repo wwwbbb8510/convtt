@@ -175,7 +175,7 @@ class TorchDriver(BaseDriver):
         # check whether to use cuda
         self._use_cuda = torch.cuda.is_available() and self.gpu_ids is not None
 
-    def train_model(self):
+    def train_model(self, test_per_epoch=False):
         """
         train the model
         :return: the trained model
@@ -214,6 +214,12 @@ class TorchDriver(BaseDriver):
                 logging.debug(
                     '{}, validation_acc_mean:{}, validation_acc_stddev'.format(datetime.now(), mean_validation_accu,
                                                                                stddev_validation_acccu))
+            # Test the model every epoch on test set if needed
+            if test_per_epoch:
+                mean_test_accu, stddev_test_acccu = self.test_model(self.test_loader)
+                logging.debug(
+                    '{}, test_acc_mean:{}, test_acc_stddev'.format(datetime.now(), mean_test_accu,
+                                                                               stddev_test_acccu))
 
         return self.model
 
@@ -245,6 +251,9 @@ class TorchDriver(BaseDriver):
         self.model.train()
         mean_accu = np.mean(acc_list)
         stddev_acccu = np.std(acc_list)
+        logging.debug(
+            '{}, test_acc_mean:{}, test_acc_stddev'.format(datetime.now(), mean_accu,
+                                                                       stddev_acccu))
         return mean_accu, stddev_acccu
 
     @property
