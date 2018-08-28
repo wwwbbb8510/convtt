@@ -4,6 +4,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from collections import OrderedDict
 import numpy as np
+import os
 
 DEFAULT_GROWTH_RATE_CONFIG = (16, 16)
 DEFAULT_LAYER_CONFIG = (4, 4)
@@ -216,6 +217,11 @@ class _DynamicLayer(nn.Sequential):
         :param drop_rate: dropout rate
         :type drop_rate: float
         """
+        self._num_input_features = num_input_features
+        self._growth_rate = growth_rate
+        self._bn_size = bn_size
+        self._drop_rate = drop_rate
+
         super(_DynamicLayer, self).__init__()
         self.add_module('norm1', nn.BatchNorm2d(num_input_features)),
         self.add_module('relu1', nn.ReLU(inplace=True)),
@@ -225,7 +231,6 @@ class _DynamicLayer(nn.Sequential):
         self.add_module('relu2', nn.ReLU(inplace=True)),
         self.add_module('conv2', nn.Conv2d(bn_size * growth_rate, growth_rate,
                                            kernel_size=3, stride=1, padding=1, bias=False)),
-        self.drop_rate = drop_rate
 
     def forward(self, x):
         new_features = super(_DynamicLayer, self).forward(x)
@@ -233,6 +238,22 @@ class _DynamicLayer(nn.Sequential):
             new_features = F.dropout(new_features, p=self.drop_rate, training=self.training)
 
         return new_features
+
+    @property
+    def num_input_features(self):
+        return self._num_input_features
+
+    @property
+    def growth_rate(self):
+        return self._growth_rate
+
+    @property
+    def bn_size(self):
+        return self._bn_size
+
+    @property
+    def drop_rate(self):
+        return self._drop_rate
 
 
 class _DynamicBlock(nn.Sequential):
@@ -304,6 +325,21 @@ class _DynamicBlock(nn.Sequential):
             curr_output = torch.cat(curr_output, 1)
 
         return curr_output
+
+    def __repr__(self):
+        str_repr = super(_DynamicBlock, self).__repr__() + os.linesep
+        str_connection = self.dict_connections_by_layer['dynamic_layer_0']
+        str_repr += 'input connection: {}'.format(str_connection)
+        str_repr += os.linesep
+        for i in range(self.num_layers):
+            curr_layer_index = i + 1
+            str_connection = self.dict_connections_by_layer['dynamic_layer_%d' % curr_layer_index]
+            str_repr += 'dynamic layer - {}'.format(curr_layer_index)
+            str_repr += os.linesep
+            str_repr += 'layer connection: {}'.format(str_connection)
+            str_repr += os.linesep
+
+        return str_repr
 
     def _parse_binary_connections(self):
         if isinstance(self._connections[0], list):
