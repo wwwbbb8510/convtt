@@ -251,9 +251,6 @@ class TorchDriver(BaseDriver):
         self.model.train()
         mean_accu = np.mean(acc_list)
         stddev_acccu = np.std(acc_list)
-        logging.debug(
-            '{}, test_acc_mean:{}, test_acc_stddev'.format(datetime.now(), mean_accu,
-                                                                       stddev_acccu))
         return mean_accu, stddev_acccu
 
     @property
