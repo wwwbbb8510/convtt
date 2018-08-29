@@ -57,6 +57,12 @@ class BaseDriver(object):
     def test_model(self, data_loader):
         raise NotImplementedError()
 
+    def save_model(self, file_path):
+        raise NotImplementedError()
+
+    def load_model(self, file_path):
+        raise NotImplementedError()
+
     @property
     def training_epoch(self):
         return self._training_epoch
@@ -219,7 +225,7 @@ class TorchDriver(BaseDriver):
                 mean_test_accu, stddev_test_acccu = self.test_model(self.test_loader)
                 logging.debug(
                     '{}, test_acc_mean:{}, test_acc_stddev'.format(datetime.now(), mean_test_accu,
-                                                                               stddev_test_acccu))
+                                                                   stddev_test_acccu))
 
         return self.model
 
@@ -252,6 +258,12 @@ class TorchDriver(BaseDriver):
         mean_accu = np.mean(acc_list)
         stddev_acccu = np.std(acc_list)
         return mean_accu, stddev_acccu
+
+    def save_model(self, file_path):
+        torch.save(self.model.state_dict(), file_path)
+
+    def load_model(self, file_path):
+        self.model.load_state_dict(torch.load(file_path))
 
     @property
     def training_loader(self):
@@ -306,6 +318,11 @@ class TorchDriver(BaseDriver):
 
     @property
     def model(self):
+        """
+        model getter
+        :return: model
+        :rtype: Module
+        """
         return self._model
 
     @model.setter
