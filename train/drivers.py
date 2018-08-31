@@ -218,13 +218,13 @@ class TorchDriver(BaseDriver):
             if self.validation_loader is not None:
                 mean_validation_accu, stddev_validation_acccu = self.test_model(self.validation_loader)
                 logging.debug(
-                    '{}, validation_acc_mean:{}, validation_acc_stddev'.format(datetime.now(), mean_validation_accu,
-                                                                               stddev_validation_acccu))
+                    '{}, validation_acc_mean:{}, validation_acc_stddev:{}'.format(datetime.now(), mean_validation_accu,
+                                                                                  stddev_validation_acccu))
             # Test the model every epoch on test set if needed
             if test_per_epoch:
                 mean_test_accu, stddev_test_acccu = self.test_model(self.test_loader)
                 logging.debug(
-                    '{}, test_acc_mean:{}, test_acc_stddev'.format(datetime.now(), mean_test_accu,
+                    '{}, test_acc_mean:{}, test_acc_stddev:{}'.format(datetime.now(), mean_test_accu,
                                                                    stddev_test_acccu))
 
         return self.model
