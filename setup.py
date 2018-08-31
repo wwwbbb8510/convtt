@@ -17,6 +17,7 @@ setuptools.setup(
     scripts=[
         'convtt/bin/convtt_train_densenet.py',
         'convtt/bin/convtt_train_dynamicnet.py',
+        'convtt/analysis/analysis_test_accuracy.py',
     ],
     classifiers=(
         "Programming Language :: Python :: 3",
