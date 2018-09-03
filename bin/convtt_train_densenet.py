@@ -25,9 +25,10 @@ def main(args):
     logging.basicConfig(filename=log_file_path, level=logging.DEBUG)
     logging.info('===start train densenet. net_name:%s, dataset:%s===', args.net_name, args.dataset)
 
-    image_shape = (1,28,28)
     # load dataset
-    dataset = ImagesetLoader.load(args.dataset, image_shape=image_shape)
+    dataset = ImagesetLoader.load(args.dataset)
+    image_shape = dataset.image_shape
+
     # build model
     model = getattr(densenet, "densenet" + args.net_name, "densenet40")(num_classes=10, image_shape=image_shape)
 

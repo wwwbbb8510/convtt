@@ -221,7 +221,7 @@ class DenseNet(nn.Module):
         self.features.add_module('norm5', nn.BatchNorm2d(num_features))
 
         # Final pooling
-        avgpool_kernel_size, avgpool_stride, avgpool_padding = self._generate_last_pooling_parameters()
+        avgpool_kernel_size, avgpool_stride, avgpool_padding = (width, 1, 0)
         self.avgpool = nn.AvgPool2d(avgpool_kernel_size, stride=avgpool_stride, padding=avgpool_padding)
         width, height = self._calculate_image_size(width, height, avgpool_padding, avgpool_kernel_size, avgpool_stride)
 
@@ -244,16 +244,6 @@ class DenseNet(nn.Module):
         kernel_size, stride, padding = 7, 2, 3
         if self.image_shape[1] < 128:
             kernel_size, stride, padding = 3, 1, 1
-        return kernel_size, stride, padding
-
-    def _generate_last_pooling_parameters(self):
-        """
-        generate the parameters of the last pooling layer
-        :return: kernel_size, stride, padding
-        """
-        kernel_size, stride, padding = 7, 1, 0
-        if self.image_shape[1] < 128:
-            kernel_size, stride, padding = 8, 1, 0
         return kernel_size, stride, padding
 
     def _calculate_image_size(self, width, height, padding_num, kernel_size, stride_size):

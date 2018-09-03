@@ -16,11 +16,11 @@ def main(args):
     logging.basicConfig(filename=log_file_path, level=logging.DEBUG)
     logging.info('===start train dynamicnet on dataset:%s===', args.dataset)
 
-    image_shape = (1,28,28)
     # load dataset
-    dataset = ImagesetLoader.load(args.dataset, image_shape=image_shape)
+    dataset = ImagesetLoader.load(args.dataset)
+    image_shape = dataset.image_shape
     # build model
-    model = dynamicnet()
+    model = dynamicnet(image_shape=image_shape)
 
     # initialise trainer
     optimiser = build_optimiser(model=model, name='ScheduledSGD', milestones=[10, 20], lr=0.1)
