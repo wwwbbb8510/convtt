@@ -180,7 +180,7 @@ class DenseNet(nn.Module):
         self.features.add_module('norm5', nn.BatchNorm2d(num_features))
 
         # Final pooling
-        avgpool_kernel_size, avgpool_stride, avgpool_padding = self._generate_last_pooling_parameters()
+        avgpool_kernel_size, avgpool_stride, avgpool_padding = (width, 1, 0)
         self.avgpool = nn.AvgPool2d(avgpool_kernel_size, stride=avgpool_stride, padding=avgpool_padding)
         width, height = self._calculate_image_size(width, height, avgpool_padding, avgpool_kernel_size, avgpool_stride)
 
