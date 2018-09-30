@@ -24,7 +24,7 @@ def main(args):
 
     # initialise trainer
     optimiser = build_optimiser(model=model, name='ScheduledSGD', milestones=[10, 20], lr=0.1)
-    driver = build_driver(model=model, training_epoch=10, batch_size=128, training_data=dataset.train['images'],
+    driver = build_driver(model=model, training_epoch=5, batch_size=128, training_data=dataset.train['images'],
                           training_label=dataset.train['labels'],
                           validation_data=None, validation_label=None, test_data=dataset.test['images'],
                           test_label=dataset.test['labels'], optimiser=optimiser)
