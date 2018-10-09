@@ -5,7 +5,6 @@ import torch.nn.functional as F
 from collections import OrderedDict
 import numpy as np
 import os
-import logging
 
 DEFAULT_GROWTH_RATE_CONFIG = (16, 16)
 DEFAULT_LAYER_CONFIG = (4, 4)
@@ -236,7 +235,6 @@ class _DynamicLayer(nn.Sequential):
     def forward(self, x):
         new_features = super(_DynamicLayer, self).forward(x)
         if self.drop_rate > 0:
-            logging.debug('---dropout rate: {} is applied---'.format(self.drop_rate))
             new_features = F.dropout(new_features, p=self.drop_rate, training=self.training)
 
         return new_features
