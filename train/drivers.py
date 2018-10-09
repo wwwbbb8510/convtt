@@ -214,8 +214,12 @@ class TorchDriver(BaseDriver):
                 # print statistics
                 running_loss += loss.data[0]
             logging.debug('epoch:{}, training_loss:{}'.format(epoch + 1, running_loss / epoch_steps))
-            # Test the model every epoch on validation set
+            # Test the model every epoch on validation set along with outputting training accuracy
             if self.validation_loader is not None:
+                mean_training_accu, stddev_training_acccu = self.test_model(self.training_loader)
+                logging.debug(
+                    '{}, training_acc_mean:{}, training_acc_stddev:{}'.format(datetime.now(), mean_training_accu,
+                                                                              stddev_training_acccu))
                 mean_validation_accu, stddev_validation_acccu = self.test_model(self.validation_loader)
                 logging.debug(
                     '{}, validation_acc_mean:{}, validation_acc_stddev:{}'.format(datetime.now(), mean_validation_accu,
@@ -225,7 +229,7 @@ class TorchDriver(BaseDriver):
                 mean_test_accu, stddev_test_acccu = self.test_model(self.test_loader)
                 logging.debug(
                     '{}, test_acc_mean:{}, test_acc_stddev:{}'.format(datetime.now(), mean_test_accu,
-                                                                   stddev_test_acccu))
+                                                                      stddev_test_acccu))
 
         return self.model
 
