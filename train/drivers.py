@@ -196,6 +196,8 @@ class TorchDriver(BaseDriver):
 
         # train the model
         epoch_steps = len(self.training_loader)
+        current_best_epoch = 0
+        current_best_validation_acc = 0
         for epoch in range(self.training_epoch):  # loop over the dataset multiple times
             running_loss = 0.0
             for i, data in enumerate(self.training_loader, 0):
@@ -224,12 +226,20 @@ class TorchDriver(BaseDriver):
                 logging.debug(
                     '{}, validation_acc_mean:{}, validation_acc_stddev:{}'.format(datetime.now(), mean_validation_accu,
                                                                                   stddev_validation_acccu))
+
             # Test the model every epoch on test set if needed
             if test_per_epoch:
                 mean_test_accu, stddev_test_acccu = self.test_model(self.test_loader)
                 logging.debug(
                     '{}, test_acc_mean:{}, test_acc_stddev:{}'.format(datetime.now(), mean_test_accu,
                                                                       stddev_test_acccu))
+
+            if current_best_validation_acc < mean_validation_accu:
+                current_best_validation_acc = mean_validation_accu
+                current_best_epoch = epoch
+            else:
+                if epoch - current_best_epoch >= 10:
+                    break
 
         return self.model
 
