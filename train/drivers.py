@@ -174,6 +174,8 @@ class TorchDriver(BaseDriver):
         self._validation_loader = None
         self._test_loader = None
         self._test_batch_size = None
+        self._best_validation_acc = None
+        self._best_validation_epoch = None
 
         # enable specified gpus
         if self.gpu_ids is not None:
@@ -196,8 +198,8 @@ class TorchDriver(BaseDriver):
 
         # train the model
         epoch_steps = len(self.training_loader)
-        current_best_epoch = 0
-        current_best_validation_acc = 0
+        self._best_validation_acc = 0
+        self._best_validation_epoch = 0
         for epoch in range(self.training_epoch):  # loop over the dataset multiple times
             running_loss = 0.0
             for i, data in enumerate(self.training_loader, 0):
@@ -234,11 +236,11 @@ class TorchDriver(BaseDriver):
                     '{}, test_acc_mean:{}, test_acc_stddev:{}'.format(datetime.now(), mean_test_accu,
                                                                       stddev_test_acccu))
 
-            if current_best_validation_acc < mean_validation_accu:
-                current_best_validation_acc = mean_validation_accu
-                current_best_epoch = epoch
+            if self._best_validation_acc < mean_validation_accu:
+                self._best_validation_acc = mean_validation_accu
+                self._best_validation_epoch = epoch
             else:
-                if epoch - current_best_epoch >= 10:
+                if epoch - self._best_validation_epoch >= 10:
                     break
 
         return self.model
@@ -342,3 +344,21 @@ class TorchDriver(BaseDriver):
     @model.setter
     def model(self, model):
         self._model = model
+
+    @property
+    def best_validation_acc(self):
+        """
+        best_validation_acc getter
+        :return: best_validation_acc
+        :rtype: Module
+        """
+        return self._best_validation_acc
+
+    @property
+    def best_validation_epoch(self):
+        """
+        best_validation_epoch getter
+        :return: best_validation_epoch
+        :rtype: Module
+        """
+        return self._best_validation_epoch
