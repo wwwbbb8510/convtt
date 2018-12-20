@@ -216,7 +216,7 @@ class TorchDriver(BaseDriver):
                 loss.backward()
                 self.optimiser.step()
                 # print statistics
-                running_loss += loss.data[0]
+                running_loss += loss.item()
             logging.debug('epoch:{}, training_loss:{}'.format(epoch + 1, running_loss / epoch_steps))
             # Test the model every epoch on validation set along with outputting training accuracy
             if self.validation_loader is not None:
@@ -260,14 +260,14 @@ class TorchDriver(BaseDriver):
         acc_list = []
         for data in data_loader:
             images, labels = data
-            images = Variable(images, volatile=True)
+            # images = Variable(images, volatile=True)
             if self._use_cuda:
                 images = images.cuda()
                 labels = labels.cuda()
             outputs = self.model(images)
             _, predicted = torch.max(outputs.data, 1)
             total = labels.size(0)
-            correct = (predicted.type(torch.LongTensor) == labels.type(torch.LongTensor)).sum()
+            correct = (predicted.type(torch.LongTensor) == labels.type(torch.LongTensor)).sum().item()
             acc_list.append(correct / total)
         # set model back to training mode
         self.model.train()

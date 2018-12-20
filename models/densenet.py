@@ -146,12 +146,12 @@ class DenseNet(nn.Module):
         # Official init from torch repo.
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
-                nn.init.kaiming_normal(m.weight)
+                nn.init.kaiming_normal_(m.weight)
             elif isinstance(m, nn.BatchNorm2d):
-                nn.init.constant(m.weight, 1)
-                nn.init.constant(m.bias, 0)
+                nn.init.constant_(m.weight, 1)
+                nn.init.constant_(m.bias, 0)
             elif isinstance(m, nn.Linear):
-                nn.init.constant(m.bias, 0)
+                nn.init.constant_(m.bias, 0)
 
     def init_bock_custom(self, block_config, num_init_features, bn_size, drop_rate, num_classes):
         width, height = self.image_shape[1], self.image_shape[2]
