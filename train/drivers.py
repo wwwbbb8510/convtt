@@ -258,17 +258,17 @@ class TorchDriver(BaseDriver):
         # set model to eval mode
         self.model.eval()
         acc_list = []
-        for data in data_loader:
-            images, labels = data
-            # images = Variable(images, volatile=True)
-            if self._use_cuda:
-                images = images.cuda()
-                labels = labels.cuda()
-            outputs = self.model(images)
-            _, predicted = torch.max(outputs.data, 1)
-            total = labels.size(0)
-            correct = (predicted.type(torch.LongTensor) == labels.type(torch.LongTensor)).sum().item()
-            acc_list.append(correct / total)
+        with torch.no_grad():
+            for data in data_loader:
+                images, labels = data
+                if self._use_cuda:
+                    images = images.cuda()
+                    labels = labels.cuda()
+                outputs = self.model(images)
+                _, predicted = torch.max(outputs.data, 1)
+                total = labels.size(0)
+                correct = (predicted.type(torch.LongTensor) == labels.type(torch.LongTensor)).sum().item()
+                acc_list.append(correct / total)
         # set model back to training mode
         self.model.train()
         mean_accu = np.mean(acc_list)
