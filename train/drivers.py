@@ -17,7 +17,7 @@ class BaseDriver(object):
 
     def __init__(self, training_epoch=None, batch_size=None, training_data=None, training_label=None,
                  validation_data=None, validation_label=None, test_data=None, test_label=None,
-                 gpu_ids=None, optimiser=None):
+                 gpu_ids=None, optimiser=None, early_stop_max_epochs=10):
         """
         The Base driver of training network
         :param training_epoch: the training epoch number
@@ -39,6 +39,7 @@ class BaseDriver(object):
         :param gpu_ids: a list of gpu IDs that are going to be used to train the model
         :type gpu_ids: list
         :param optimiser: the optimiser of training the network
+        :param early_stop_max_epochs: the training stops when it won't improve in early_stop_max_epochs epochs
         """
         self._training_epoch = training_epoch
         self._batch_size = batch_size
@@ -50,6 +51,7 @@ class BaseDriver(object):
         self._test_label = test_label
         self._gpu_ids = gpu_ids
         self._optimiser = optimiser
+        self.early_stop_max_epochs = early_stop_max_epochs
 
     def train_model(self):
         raise NotImplementedError()
@@ -240,7 +242,7 @@ class TorchDriver(BaseDriver):
                 self._best_validation_acc = mean_validation_accu
                 self._best_validation_epoch = epoch
             else:
-                if epoch - self._best_validation_epoch >= 10:
+                if epoch - self._best_validation_epoch >= self.early_stop_max_epochs:
                     break
 
         return self.model
