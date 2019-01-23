@@ -23,7 +23,7 @@ def densenet100_12(**kwargs):
     """
     Densenet-100-12 model
     """
-    model = DenseNet(num_init_features=16, growth_rate=12, block_config=(32, 32, 32),
+    model = DenseNet(num_init_features=16, growth_rate=12, block_config=(16, 16, 16),
                      **kwargs)
     return model
 
@@ -32,7 +32,7 @@ def densenet100_24(**kwargs):
     """
     Densenet-100-24 model
     """
-    model = DenseNet(num_init_features=16, growth_rate=24, block_config=(32, 32, 32),
+    model = DenseNet(num_init_features=16, growth_rate=24, block_config=(16, 16, 16),
                      **kwargs)
     return model
 
