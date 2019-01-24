@@ -14,7 +14,7 @@ def densenet40(**kwargs):
     """
     Densenet-40 model
     """
-    model = DenseNet(num_init_features=16, growth_rate=12, block_config=(5, 5, 5),
+    model = DenseNet(num_init_features=16, growth_rate=12, block_config=(6, 6, 6),
                      **kwargs)
     return model
 
