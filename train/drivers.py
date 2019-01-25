@@ -203,6 +203,7 @@ class TorchDriver(BaseDriver):
         self._best_validation_acc = 0
         self._best_validation_epoch = 0
         for epoch in range(self.training_epoch):  # loop over the dataset multiple times
+            self.optimiser.epoch()
             running_loss = 0.0
             for i, data in enumerate(self.training_loader, 0):
                 # get the inputs
