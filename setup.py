@@ -6,7 +6,7 @@ with open(os.path.join('convtt', "README.md"), "r") as fh:
 
 setuptools.setup(
     name="convtt",
-    version="0.0.1",
+    version="0.0.2",
     author="Bin Wang",
     author_email="wwwbbb8510@gmail.com",
     description="Convolutional Neural Netoworks Training Tools",
