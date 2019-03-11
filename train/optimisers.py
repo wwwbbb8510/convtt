@@ -1,7 +1,8 @@
 from torch import optim
 from torch.nn import Module
-from torch.optim.lr_scheduler import MultiStepLR
+from torch.optim.lr_scheduler import MultiStepLR, _LRScheduler
 import os
+from bisect import bisect_right
 
 
 class BaseOptimiserWrapper(object):
@@ -120,3 +121,66 @@ class ScheduledSGDOptimiserWrapper(BaseOptimiserWrapper):
         str_repr += os.linesep
 
         return str_repr
+
+
+class CustomLrsSGDOptimiserWrapper(BaseOptimiserWrapper):
+    """
+    The wrapper of Scheduled Stochastic Gradient Decent Optimiser
+    """
+
+    def __init__(self, lrs, total_epochs=300, **kwargs):
+        self._lrs = lrs
+        self._total_epochs = total_epochs
+        super(CustomLrsSGDOptimiserWrapper, self).__init__(**kwargs)
+
+    def _init_optimiser(self, **kwargs):
+        self._optimiser = optim.SGD(self.model.parameters(), **kwargs)
+        self._scheduler = MultiStepCustomLRS(self._optimiser, lrs=self._lrs, total_epochs=self._total_epochs)
+
+    @property
+    def lrs(self):
+        return self._lrs
+
+    @property
+    def total_epochs(self):
+        return self._total_epochs
+
+    def __repr__(self):
+        str_repr = super(CustomLrsSGDOptimiserWrapper, self).__repr__() + os.linesep
+        str_repr += 'Optimiser used: Custom LRS(learning rates) SGD Optimiser'
+        str_repr += os.linesep
+
+        return str_repr
+
+
+class MultiStepCustomLRS(_LRScheduler):
+    """Set the learning rate of each parameter group to customized learning rates
+    last_epoch=-1, sets initial lr as lr.
+
+    Args:
+        optimizer (Optimizer): Wrapped optimizer.
+        lrs (list): List of customized learning rates.
+        total_epochs (float): total number of training epochs.
+        last_epoch (int): The index of last epoch. Default: -1.
+
+    Example:
+        >>> scheduler = MultiStepCustomLRS(optimizer, lrs=[0.1, 0.01, 0.001], total_epochs=300)
+        >>> for epoch in range(100):
+        >>>     scheduler.step()
+        >>>     train(...)
+        >>>     validate(...)
+    """
+
+    def __init__(self, optimizer, lrs, total_epochs=300, last_epoch=-1):
+        if not list(lrs) == sorted(lrs):
+            raise ValueError('Custom learning rates should be a list of'
+                             ' increasing integers. Got {}', lrs)
+        self.lrs = lrs
+        self.total_epochs = total_epochs
+        num_milestones = len(lrs) - 1
+        self._milestones = [i * (self.total_epochs / (num_milestones + 1)) for i in range(1, num_milestones+1)]
+        super(MultiStepCustomLRS, self).__init__(optimizer, last_epoch)
+
+    def get_lr(self):
+        return [self.lrs[bisect_right(self._milestones, self.last_epoch)]
+                for base_lr in self.base_lrs]

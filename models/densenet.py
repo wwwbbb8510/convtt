@@ -3,6 +3,7 @@ import math
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from torch.nn import init
 from collections import OrderedDict
 
 def custom_densenet(block_config, **kwargs):
@@ -72,6 +73,16 @@ def densenet161(**kwargs):
                      **kwargs)
     return model
 
+def init_weights(ms):
+    for m in ms.modules():
+        classname = m.__class__.__name__
+        if classname.find('Conv') != -1:
+            m.weight.data = init.kaiming_normal_(m.weight.data)
+        elif classname.find('BatchNorm') != -1:
+            m.weight.data.normal_(1.0, 0.02)
+            m.bias.data.fill_(0)
+        elif classname.find('Linear') != -1:
+            m.weight.data = init.kaiming_normal_(m.weight.data)
 
 class _DenseLayer(nn.Sequential):
     def __init__(self, num_input_features, growth_rate, bn_size, drop_rate):

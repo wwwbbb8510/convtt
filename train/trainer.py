@@ -76,6 +76,9 @@ def build_optimiser(name, **kwargs):
     elif name.lower() == 'scheduledsgd':
         from convtt.train.optimisers import ScheduledSGDOptimiserWrapper
         optimiser = ScheduledSGDOptimiserWrapper(**kwargs)
+    elif name.lower() == 'customlrssgd':
+        from convtt.train.optimisers import CustomLrsSGDOptimiserWrapper
+        optimiser = CustomLrsSGDOptimiserWrapper(**kwargs)
 
     return optimiser
 
