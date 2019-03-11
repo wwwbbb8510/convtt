@@ -7,6 +7,8 @@ from convtt.models import densenet
 from convtt.train.trainer import *
 from cudam import set_visible_gpu
 
+# nohup python convtt_train_densenet.py -g 0 -n 100_12 -d cifar10 >& log/nohup_evaluate_custom_1_aug.log &
+
 ARR_AVAILABLE_DENSENETS = [
     '40',
     '100_12',
@@ -27,7 +29,7 @@ momentum = 0.9
 def main(args):
     _filter_args(args)
     # configure logging
-    log_file_path = 'log/train_densenet.log'
+    log_file_path = 'log/train_densenet_{}.log'.format(args.net_name)
     logging.basicConfig(filename=log_file_path, level=logging.DEBUG)
     logging.info('===start train densenet. net_name:%s, dataset:%s===', args.net_name, args.dataset)
 
