@@ -8,6 +8,7 @@ from convtt.train.trainer import *
 from cudam import set_visible_gpu
 
 # nohup python convtt_train_densenet.py -g 0 -n 100_12 -d cifar10 >& log/nohup_evaluate_densenet_100_12.log &
+# nohup python convtt_train_densenet.py -g 2 -n 100_24 -d cifar10 >& log/nohup_evaluate_densenet_100_24.log &
 
 ARR_AVAILABLE_DENSENETS = [
     '40',
