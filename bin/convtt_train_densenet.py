@@ -48,6 +48,8 @@ def main(args):
     # build model
     model = getattr(densenet, "densenet" + args.net_name, "densenet40")(num_classes=10, image_shape=image_shape,
                                                                         drop_rate=dropout_rate)
+    logging.debug('---init weights---')
+    model.apply(densenet.init_weights)
 
     # initialise trainer
     optimiser = build_optimiser(model=model, name='ScheduledSGD', milestones=[150, 225], lr=0.1, momentum=momentum,

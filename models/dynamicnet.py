@@ -5,6 +5,7 @@ import torch.nn.functional as F
 from collections import OrderedDict
 import numpy as np
 import os
+from torch.nn import init
 
 DEFAULT_GROWTH_RATE_CONFIG = (16, 16)
 DEFAULT_LAYER_CONFIG = (4, 4)
@@ -38,8 +39,19 @@ def dynamicnet(growth_rate_config=DEFAULT_GROWTH_RATE_CONFIG, layer_config=DEFAU
     """
     net = DynamicNet(growth_rate_config, layer_config, connection_config,
                      bn_size, num_classes, image_shape, num_init_features, drop_rate)
+    net.apply(init_weights)
     return net
 
+def init_weights(ms):
+    for m in ms.modules():
+        classname = m.__class__.__name__
+        if classname.find('Conv') != -1:
+            m.weight.data = init.kaiming_normal_(m.weight.data)
+        elif classname.find('BatchNorm') != -1:
+            m.weight.data.normal_(1.0, 0.02)
+            m.bias.data.fill_(0)
+        elif classname.find('Linear') != -1:
+            m.weight.data = init.kaiming_normal_(m.weight.data)
 
 class DynamicNet(nn.Module):
     """
@@ -84,16 +96,6 @@ class DynamicNet(nn.Module):
         super(DynamicNet, self).__init__()
 
         self.init_bocks()
-
-        # Official init from torch repo.
-        for m in self.modules():
-            if isinstance(m, nn.Conv2d):
-                nn.init.kaiming_normal(m.weight)
-            elif isinstance(m, nn.BatchNorm2d):
-                nn.init.constant(m.weight, 1)
-                nn.init.constant(m.bias, 0)
-            elif isinstance(m, nn.Linear):
-                nn.init.constant(m.bias, 0)
 
     def init_bocks(self):
         width, height = self.image_shape[1], self.image_shape[2]
