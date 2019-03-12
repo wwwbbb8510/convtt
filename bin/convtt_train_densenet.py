@@ -22,7 +22,7 @@ ARR_AVAILABLE_DENSENETS = [
 
 ARR_AVAILABLE_DATASETS = list(ImagesetLoader.dataset_classes().keys())
 
-dropout_rate = 0.2
+dropout_rate = 0
 weight_decay = 1e-4
 momentum = 0.9
 
