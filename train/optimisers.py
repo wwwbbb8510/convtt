@@ -172,9 +172,6 @@ class MultiStepCustomLRS(_LRScheduler):
     """
 
     def __init__(self, optimizer, lrs, total_epochs=300, last_epoch=-1):
-        if not list(lrs) == sorted(lrs):
-            raise ValueError('Custom learning rates should be a list of'
-                             ' increasing integers. Got {}', lrs)
         self.lrs = lrs
         self.total_epochs = total_epochs
         num_milestones = len(lrs) - 1
