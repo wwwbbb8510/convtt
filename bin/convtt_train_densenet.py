@@ -10,6 +10,7 @@ from cudam import set_visible_gpu
 # nohup python convtt_train_densenet.py -g 0 -n 100_12 -d cifar10 >& log/nohup_evaluate_densenet_100_12.log &
 # nohup python convtt_train_densenet.py -g 2 -n 100_24 -d cifar10 >& log/nohup_evaluate_densenet_100_24.log &
 # nohup python convtt_train_densenet.py -g 0 -n 40 -d cifar10 >& log/nohup_evaluate_densenet_40.log &
+# nohup python convtt_train_densenet.py -g 0 -n 40 -d cifar10 -i lsuv >& log/nohup_evaluate_densenet_40_lsuv.log &
 
 ARR_AVAILABLE_DENSENETS = [
     '40',
@@ -26,12 +27,13 @@ ARR_AVAILABLE_DATASETS = list(ImagesetLoader.dataset_classes().keys())
 dropout_rate = 0
 weight_decay = 1e-4
 momentum = 0.9
+batch_size = 64
 
 
 def main(args):
     _filter_args(args)
     # configure logging
-    log_file_path = 'log/train_densenet_{}.log'.format(args.net_name)
+    log_file_path = 'log/train_densenet_{}_{}.log'.format(args.net_name, args.init)
     logging.basicConfig(filename=log_file_path, level=logging.DEBUG)
     logging.info('===start train densenet. net_name:%s, dataset:%s===', args.net_name, args.dataset)
 
@@ -49,20 +51,27 @@ def main(args):
     # build model
     model = getattr(densenet, "densenet" + args.net_name, "densenet40")(num_classes=10, image_shape=image_shape,
                                                                         drop_rate=dropout_rate)
-    logging.debug('---init weights---')
-    model.apply(densenet.init_weights)
+    logging.debug('---init weights: {}---'.format(args.init))
+    if args.init == 'kaiming':
+        model.apply(densenet.init_weights)
+    elif args.init == 'lsuv':
+        first_batch_data = None
+        for i, data in enumerate(dataset[0], 0):
+            first_batch_data = data
+            break
+        densenet.init_weights_lsuv(model, first_batch_data)
 
     # initialise trainer
     optimiser = build_optimiser(model=model, name='ScheduledSGD', milestones=[150, 225], lr=0.1, momentum=momentum,
                                 weight_decay=weight_decay, nesterov=True)
     if args.dataset == 'cifar10':
-        driver = build_driver(model=model, training_epoch=300, batch_size=64, optimiser=optimiser,
+        driver = build_driver(model=model, training_epoch=300, batch_size=batch_size, optimiser=optimiser,
                               early_stop_max_epochs=300)
         train_loader, test_loader = dataset
         driver._training_loader = train_loader
         driver._validation_loader = test_loader
     else:
-        driver = build_driver(model=model, training_epoch=30, batch_size=128, training_data=dataset.train['images'],
+        driver = build_driver(model=model, training_epoch=30, batch_size=batch_size, training_data=dataset.train['images'],
                           training_label=dataset.train['labels'],
                           validation_data=None, validation_label=None, test_data=dataset.test['images'],
                           test_label=dataset.test['labels'], optimiser=optimiser)
@@ -82,6 +91,7 @@ def _filter_args(args):
     args.net_name = str(args.net_name) if args.net_name is not None else None
     args.dataset = str(args.dataset) if args.dataset is not None else None
     args.gpu_id = int(args.gpu_id) if args.gpu_id is not None else None
+    args.init = str(args.init) if args.init is not None else 'kaiming'
     if args.net_name not in ARR_AVAILABLE_DENSENETS:
         raise Exception('net: {} is not available'.format(args.net_name))
     if args.dataset not in ARR_AVAILABLE_DATASETS:
@@ -94,6 +104,7 @@ if __name__ == '__main__':
     parser.add_argument('-n', '--net_name', help='Densenet extension name, e.g. {}'.format(ARR_AVAILABLE_DENSENETS))
     parser.add_argument('-d', '--dataset', help='Densenet extension name, e.g. {}'.format(ARR_AVAILABLE_DATASETS))
     parser.add_argument('-g', '--gpu_id', help='GPU ID, default: None')
+    parser.add_argument('-i', '--init', help='Weight initialization, default: kaiming, options: kaiming, lsuv')
 
     args = parser.parse_args()
     main(args)

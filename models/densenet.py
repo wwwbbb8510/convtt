@@ -5,11 +5,14 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.nn import init
 from collections import OrderedDict
+from .init import LSUVinit
+
 
 def custom_densenet(block_config, **kwargs):
-    model = DenseNet(num_init_features=16, block_config=block_config, custom_growth_rate=True ,
+    model = DenseNet(num_init_features=16, block_config=block_config, custom_growth_rate=True,
                      **kwargs)
     return model
+
 
 def densenet40(**kwargs):
     """
@@ -73,6 +76,7 @@ def densenet161(**kwargs):
                      **kwargs)
     return model
 
+
 def init_weights(ms):
     for m in ms.modules():
         classname = m.__class__.__name__
@@ -83,6 +87,21 @@ def init_weights(ms):
             m.bias.data.fill_(0)
         elif classname.find('Linear') != -1:
             m.weight.data = init.kaiming_normal_(m.weight.data)
+
+
+def init_batch_norm(ms):
+    for m in ms.modules():
+        classname = m.__class__.__name__
+        if classname.find('BatchNorm') != -1:
+            m.weight.data.normal_(1.0, 0.02)
+            m.bias.data.fill_(0)
+
+
+def init_weights_lsuv(model, data):
+    LSUVinit(model, data, needed_std=1.0, std_tol=0.1, max_attempts=10, do_orthonorm=True,
+             cuda=torch.cuda.is_available())
+    model.apply(init_batch_norm)
+
 
 class _DenseLayer(nn.Sequential):
     def __init__(self, num_input_features, growth_rate, bn_size, drop_rate):
@@ -137,7 +156,8 @@ class DenseNet(nn.Module):
     """
 
     def __init__(self, growth_rate=32, block_config=(6, 12, 24, 16),
-                 num_init_features=64, bn_size=4, drop_rate=0, num_classes=1000, image_shape=(3, 224, 224), custom_growth_rate=False):
+                 num_init_features=64, bn_size=4, drop_rate=0, num_classes=1000, image_shape=(3, 224, 224),
+                 custom_growth_rate=False):
         self.num_connections = 0  # not used
         self.image_shape = image_shape
         self.features = None
