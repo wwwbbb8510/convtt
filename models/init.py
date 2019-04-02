@@ -114,8 +114,10 @@ def LSUVinit(model, data, needed_std=1.0, std_tol=0.1, max_attempts=10, do_ortho
     model.eval()
     if cuda:
         model = model.cuda()
+        data[0], data[1] = data[0].cuda(), data[1].cuda()
     else:
         model = model.cpu()
+        data[0], data[1] = data[0].cpu(), data[1].cpu()
     logging.debug('Starting LSUV')
     model.apply(count_conv_fc_layers)
     logging.debug('Total layers to process:'.format(gg['total_fc_conv_layers']))
