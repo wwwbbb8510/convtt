@@ -185,7 +185,7 @@ class TorchDriver(BaseDriver):
         # check whether to use cuda
         self._use_cuda = torch.cuda.is_available()
 
-    def train_model(self, test_per_epoch=False):
+    def train_model(self, test_per_epoch=False, topk=(1,)):
         """
         train the model
         :return: the trained model
@@ -224,20 +224,14 @@ class TorchDriver(BaseDriver):
             # Test the model every epoch on validation set along with outputting training accuracy
             if self.validation_loader is not None:
                 mean_training_accu, stddev_training_acccu = self.test_model(self.training_loader)
-                logging.debug(
-                    '{}, training_acc_mean:{}, training_acc_stddev:{}'.format(datetime.now(), mean_training_accu,
-                                                                              stddev_training_acccu))
+                self.print_topk_acc('training_acc', mean_training_accu, stddev_training_acccu, topk)
                 mean_validation_accu, stddev_validation_acccu = self.test_model(self.validation_loader)
-                logging.debug(
-                    '{}, validation_acc_mean:{}, validation_acc_stddev:{}'.format(datetime.now(), mean_validation_accu,
-                                                                                  stddev_validation_acccu))
+                self.print_topk_acc('validation_acc', mean_validation_accu, stddev_validation_acccu, topk)
 
             # Test the model every epoch on test set if needed
             if test_per_epoch:
                 mean_test_accu, stddev_test_acccu = self.test_model(self.test_loader)
-                logging.debug(
-                    '{}, test_acc_mean:{}, test_acc_stddev:{}'.format(datetime.now(), mean_test_accu,
-                                                                      stddev_test_acccu))
+                self.print_topk_acc('test_acc', mean_test_accu, stddev_test_acccu, topk)
 
             if self._best_validation_acc < mean_validation_accu:
                 self._best_validation_acc = mean_validation_accu
@@ -248,7 +242,32 @@ class TorchDriver(BaseDriver):
 
         return self.model
 
-    def test_model(self, data_loader=None):
+    def print_topk_acc(self, label_prefix, mean_acc, stddev_acc, topk=(1,)):
+        """
+        print topk accuracy
+        :param label_prefix: label prefix: training, validation, test
+        :type label_prefix: str
+        :param mean_acc: topk mean accuracy
+        :type mean_acc: list
+        :param stddev_acc: topk accuracy standard deviation
+        :type stddev_acc: list
+        :param topk: topk config to define top-n accuracies that need to be calculated
+        :type topk: tuple
+        """
+        for i in range(len(topk)):
+            if topk[i] == 1:
+                logging.debug(
+                    '{}, {}_mean:{}, {}_stddev:{}'.format(datetime.now(), label_prefix, mean_acc[i],
+                                                          label_prefix,
+                                                          stddev_acc[i]))
+            else:
+                logging.debug(
+                    '{}, {}_mean_top{}:{}, {}_stddev_top{}:{}'.format(datetime.now(), label_prefix, topk[i],
+                                                                      mean_acc[i],
+                                                                      label_prefix, topk[i],
+                                                                      stddev_acc[i]))
+
+    def test_model(self, data_loader=None, topk=(1,)):
         """
         test the model
         :param data_loader: data loader that is used to test the model
@@ -269,14 +288,29 @@ class TorchDriver(BaseDriver):
                     labels = labels.cuda()
                 outputs = self.model(images)
                 _, predicted = torch.max(outputs.data, 1)
-                total = labels.size(0)
-                correct = (predicted.type(torch.LongTensor) == labels.type(torch.LongTensor)).sum().item()
-                acc_list.append(correct / total)
+                acc_topk = self.calculate_accuracy(outputs, labels, topk)
+                acc_list.append(acc_topk)
         # set model back to training mode
         self.model.train()
-        mean_accu = np.mean(acc_list)
-        stddev_acccu = np.std(acc_list)
+        mean_accu = np.mean(acc_list, axis=1)
+        stddev_acccu = np.std(acc_list, axis=1)
         return mean_accu, stddev_acccu
+
+    def calculate_accuracy(self, outputs, labels, topk=(1,)):
+        """Computes the accuracy over the k top predictions for the specified values of k"""
+        with torch.no_grad():
+            maxk = max(topk)
+            batch_size = outputs.size(0)
+
+            _, pred = outputs.topk(maxk, 1, True, True)
+            pred = pred.t()
+            correct = pred.eq(labels.view(1, -1).expand_as(pred))
+
+            res = []
+            for k in topk:
+                correct_k = correct[:k].view(-1).float().sum(0, keepdim=True)
+                res.append(correct_k.mul_(batch_size)[0])
+            return res
 
     def save_model(self, file_path):
         torch.save(self.model.state_dict(), file_path)
