@@ -292,8 +292,8 @@ class TorchDriver(BaseDriver):
                 acc_list.append(acc_topk)
         # set model back to training mode
         self.model.train()
-        mean_accu = np.mean(acc_list, axis=1)
-        stddev_acccu = np.std(acc_list, axis=1)
+        mean_accu = np.mean(acc_list, axis=0)
+        stddev_acccu = np.std(acc_list, axis=0)
         return mean_accu, stddev_acccu
 
     def calculate_accuracy(self, outputs, labels, topk=(1,)):
