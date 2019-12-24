@@ -233,8 +233,8 @@ class TorchDriver(BaseDriver):
                 mean_test_accu, stddev_test_acccu = self.test_model(self.test_loader)
                 self.print_topk_acc('test_acc', mean_test_accu, stddev_test_acccu, topk)
 
-            if self._best_validation_acc < mean_validation_accu:
-                self._best_validation_acc = mean_validation_accu
+            if self._best_validation_acc < mean_validation_accu[0]:
+                self._best_validation_acc = mean_validation_accu[0]
                 self._best_validation_epoch = epoch
             else:
                 if epoch - self._best_validation_epoch >= self.early_stop_max_epochs:
@@ -309,7 +309,7 @@ class TorchDriver(BaseDriver):
             res = []
             for k in topk:
                 correct_k = correct[:k].view(-1).float().sum(0, keepdim=True)
-                res.append(correct_k.mul_(batch_size)[0])
+                res.append(correct_k.mul_(1/batch_size)[0])
             return res
 
     def save_model(self, file_path):
