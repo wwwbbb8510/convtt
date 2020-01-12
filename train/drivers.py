@@ -220,6 +220,7 @@ class TorchDriver(BaseDriver):
                 self.optimiser.step()
                 # print statistics
                 running_loss += loss.item()
+                logging.debug('training progress --- epoch: {}, step: {}'.format(epoch, i)) if i % 100 == 0 else None
             logging.debug('epoch:{}, training_loss:{}'.format(epoch + 1, running_loss / epoch_steps))
             # Test the model every epoch on validation set along with outputting training accuracy
             if self.validation_loader is not None:
@@ -309,7 +310,7 @@ class TorchDriver(BaseDriver):
             res = []
             for k in topk:
                 correct_k = correct[:k].view(-1).float().sum(0, keepdim=True)
-                res.append(correct_k.mul_(1/batch_size)[0])
+                res.append(correct_k.mul_(1 / batch_size)[0])
             return res
 
     def save_model(self, file_path):
