@@ -190,16 +190,20 @@ class DenseNet(nn.Module):
         # generate the parameters of conv1
         conv0_kernel_size, conv0_stride, conv0_padding = self._generate_first_conv_parameters()
         conv0_input_channel = self.image_shape[0]
-        self.features = nn.Sequential(OrderedDict([
+        has_max_pool_in_features = True if conv0_kernel_size == 7 else False
+        features_layers = [
             ('conv0',
              nn.Conv2d(conv0_input_channel, num_init_features, kernel_size=conv0_kernel_size, stride=conv0_stride,
                        padding=conv0_padding, bias=False)),
             ('norm0', nn.BatchNorm2d(num_init_features)),
             ('relu0', nn.ReLU(inplace=True)),
-            # ('pool0', nn.MaxPool2d(kernel_size=3, stride=2, padding=1)),
-        ]))
+        ]
+        features_layers = features_layers.append(('pool0', nn.MaxPool2d(kernel_size=3, stride=2,
+                                                                        padding=1))) if has_max_pool_in_features else features_layers
+        self.features = nn.Sequential(OrderedDict(features_layers))
         width, height = self._calculate_image_size(width, height, conv0_padding, conv0_kernel_size, conv0_stride)
-        # width, height = self._calculate_image_size(width, height, 1, 3, 2)
+        width, height = self._calculate_image_size(width, height, 1, 3, 2) if has_max_pool_in_features else (
+            width, height)
 
         # Each denseblock
         num_features = num_init_features
@@ -272,16 +276,20 @@ class DenseNet(nn.Module):
         # generate the parameters of conv1
         conv0_kernel_size, conv0_stride, conv0_padding = self._generate_first_conv_parameters()
         conv0_input_channel = self.image_shape[0]
-        self.features = nn.Sequential(OrderedDict([
+        has_max_pool_in_features = True if conv0_kernel_size == 7 else False
+        features_layers = [
             ('conv0',
              nn.Conv2d(conv0_input_channel, num_init_features, kernel_size=conv0_kernel_size, stride=conv0_stride,
                        padding=conv0_padding, bias=False)),
             ('norm0', nn.BatchNorm2d(num_init_features)),
             ('relu0', nn.ReLU(inplace=True)),
-            # ('pool0', nn.MaxPool2d(kernel_size=3, stride=2, padding=1)),
-        ]))
+        ]
+        features_layers = features_layers.append(('pool0', nn.MaxPool2d(kernel_size=3, stride=2,
+                                                                        padding=1))) if has_max_pool_in_features else features_layers
+        self.features = nn.Sequential(OrderedDict(features_layers))
         width, height = self._calculate_image_size(width, height, conv0_padding, conv0_kernel_size, conv0_stride)
-        # width, height = self._calculate_image_size(width, height, 1, 3, 2)
+        width, height = self._calculate_image_size(width, height, 1, 3, 2) if has_max_pool_in_features else (
+            width, height)
 
         # Each denseblock
         num_features = num_init_features
