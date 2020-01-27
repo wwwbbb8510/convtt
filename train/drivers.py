@@ -288,7 +288,6 @@ class TorchDriver(BaseDriver):
                     images = images.cuda()
                     labels = labels.cuda()
                 outputs = self.model(images)
-                _, predicted = torch.max(outputs.data, 1)
                 acc_topk = self.calculate_accuracy(outputs, labels, topk)
                 acc_list.append(acc_topk)
         # set model back to training mode
