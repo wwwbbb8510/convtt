@@ -198,8 +198,9 @@ class DenseNet(nn.Module):
             ('norm0', nn.BatchNorm2d(num_init_features)),
             ('relu0', nn.ReLU(inplace=True)),
         ]
-        features_layers = features_layers.append(('pool0', nn.MaxPool2d(kernel_size=3, stride=2,
-                                                                        padding=1))) if has_max_pool_in_features else features_layers
+        if has_max_pool_in_features:
+            features_layers.append(('pool0', nn.MaxPool2d(kernel_size=3, stride=2,
+                                                          padding=1)))
         self.features = nn.Sequential(OrderedDict(features_layers))
         width, height = self._calculate_image_size(width, height, conv0_padding, conv0_kernel_size, conv0_stride)
         width, height = self._calculate_image_size(width, height, 1, 3, 2) if has_max_pool_in_features else (
@@ -284,8 +285,9 @@ class DenseNet(nn.Module):
             ('norm0', nn.BatchNorm2d(num_init_features)),
             ('relu0', nn.ReLU(inplace=True)),
         ]
-        features_layers = features_layers.append(('pool0', nn.MaxPool2d(kernel_size=3, stride=2,
-                                                                        padding=1))) if has_max_pool_in_features else features_layers
+        if has_max_pool_in_features:
+            features_layers.append(('pool0', nn.MaxPool2d(kernel_size=3, stride=2,
+                                                          padding=1)))
         self.features = nn.Sequential(OrderedDict(features_layers))
         width, height = self._calculate_image_size(width, height, conv0_padding, conv0_kernel_size, conv0_stride)
         width, height = self._calculate_image_size(width, height, 1, 3, 2) if has_max_pool_in_features else (
