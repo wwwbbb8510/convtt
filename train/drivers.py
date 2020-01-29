@@ -185,7 +185,7 @@ class TorchDriver(BaseDriver):
         # check whether to use cuda
         self._use_cuda = torch.cuda.is_available()
 
-    def train_model(self, test_per_epoch=False, topk=(1,), eval_training_set=True):
+    def train_model(self, test_per_epoch=False, topk=(1,), eval_training_set=True, gpu_id=None):
         """
         train the model
         :return: the trained model
@@ -197,6 +197,8 @@ class TorchDriver(BaseDriver):
 
         # Loss function
         criterion = nn.CrossEntropyLoss()
+        if gpu_id > 0:
+            criterion.cuda(gpu_id)
 
         # train the model
         epoch_steps = len(self.training_loader)
