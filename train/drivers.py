@@ -197,7 +197,7 @@ class TorchDriver(BaseDriver):
 
         # Loss function
         criterion = nn.CrossEntropyLoss()
-        if gpu_id > 0:
+        if gpu_id is not None:
             criterion.cuda(gpu_id)
 
         # train the model
