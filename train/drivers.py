@@ -185,7 +185,7 @@ class TorchDriver(BaseDriver):
         # check whether to use cuda
         self._use_cuda = torch.cuda.is_available()
 
-    def train_model(self, test_per_epoch=False, topk=(1,)):
+    def train_model(self, test_per_epoch=False, topk=(1,), eval_training_set=True):
         """
         train the model
         :return: the trained model
@@ -224,8 +224,9 @@ class TorchDriver(BaseDriver):
             logging.debug('epoch:{}, training_loss:{}'.format(epoch + 1, running_loss / epoch_steps))
             # Test the model every epoch on validation set along with outputting training accuracy
             if self.validation_loader is not None:
-                mean_training_accu, stddev_training_acccu = self.test_model(self.training_loader, topk)
-                self.print_topk_acc('training_acc', mean_training_accu, stddev_training_acccu, topk)
+                if eval_training_set:
+                    mean_training_accu, stddev_training_acccu = self.test_model(self.training_loader, topk)
+                    self.print_topk_acc('training_acc', mean_training_accu, stddev_training_acccu, topk)
                 mean_validation_accu, stddev_validation_acccu = self.test_model(self.validation_loader, topk)
                 self.print_topk_acc('validation_acc', mean_validation_accu, stddev_validation_acccu, topk)
 
