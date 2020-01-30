@@ -193,7 +193,7 @@ class TorchDriver(BaseDriver):
         """
         logging.info('===start training -%s===', self.model)
         if self._use_cuda:
-            self.model.cuda()
+            self.model.cuda() if gpu_id is None else self.model.cuda(gpu_id)
 
         # Loss function
         criterion = nn.CrossEntropyLoss()
@@ -210,9 +210,10 @@ class TorchDriver(BaseDriver):
             for i, data in enumerate(self.training_loader, 0):
                 # get the inputs
                 inputs, labels = data
-                inputs, labels = (Variable(inputs), Variable(labels.type(torch.LongTensor)))
+                inputs, labels = Variable(inputs), Variable(labels.type(torch.LongTensor))
                 if self._use_cuda:
-                    inputs, labels = inputs.cuda(), labels.cuda()
+                    inputs, labels = (inputs.cuda(), labels.cuda()) if gpu_id is None else \
+                        (inputs.cuda(gpu_id, non_blocking=True), labels.cuda(gpu_id, non_blocking=True))
                 # zero the parameter gradients
                 self.optimiser.zero_grad()
                 # forward + backward + optimize
@@ -227,14 +228,14 @@ class TorchDriver(BaseDriver):
             # Test the model every epoch on validation set along with outputting training accuracy
             if self.validation_loader is not None:
                 if eval_training_set:
-                    mean_training_accu, stddev_training_acccu = self.test_model(self.training_loader, topk)
+                    mean_training_accu, stddev_training_acccu = self.test_model(self.training_loader, topk, gpu_id)
                     self.print_topk_acc('training_acc', mean_training_accu, stddev_training_acccu, topk)
-                mean_validation_accu, stddev_validation_acccu = self.test_model(self.validation_loader, topk)
+                mean_validation_accu, stddev_validation_acccu = self.test_model(self.validation_loader, topk, gpu_id)
                 self.print_topk_acc('validation_acc', mean_validation_accu, stddev_validation_acccu, topk)
 
             # Test the model every epoch on test set if needed
             if test_per_epoch:
-                mean_test_accu, stddev_test_acccu = self.test_model(self.test_loader, topk)
+                mean_test_accu, stddev_test_acccu = self.test_model(self.test_loader, topk, gpu_id)
                 self.print_topk_acc('test_acc', mean_test_accu, stddev_test_acccu, topk)
 
             if self._best_validation_acc < mean_validation_accu[0]:
@@ -271,7 +272,7 @@ class TorchDriver(BaseDriver):
                                                                       label_prefix, topk[i],
                                                                       stddev_acc[i]))
 
-    def test_model(self, data_loader=None, topk=(1,)):
+    def test_model(self, data_loader=None, topk=(1,), gpu_id=None):
         """
         test the model
         :param data_loader: data loader that is used to test the model
@@ -288,8 +289,8 @@ class TorchDriver(BaseDriver):
             for data in data_loader:
                 images, labels = data
                 if self._use_cuda:
-                    images = images.cuda()
-                    labels = labels.cuda()
+                    images = images.cuda() if gpu_id is None else images.cuda(gpu_id, non_blocking=True)
+                    labels = labels.cuda() if gpu_id is None else labels.cuda(gpu_id, non_blocking=True)
                 outputs = self.model(images)
                 acc_topk = self.calculate_accuracy(outputs, labels, topk)
                 acc_list.append(acc_topk)
