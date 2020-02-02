@@ -185,7 +185,7 @@ class TorchDriver(BaseDriver):
         # check whether to use cuda
         self._use_cuda = torch.cuda.is_available()
 
-    def train_model(self, test_per_epoch=False, topk=(1,), eval_training_set=True, gpu_id=None):
+    def train_model(self, test_per_epoch=False, topk=(1,), eval_training_set=True, gpu_id=None, use_sampler=False):
         """
         train the model
         :return: the trained model
@@ -207,6 +207,8 @@ class TorchDriver(BaseDriver):
         for epoch in range(self.training_epoch):  # loop over the dataset multiple times
             self.optimiser.epoch()
             running_loss = 0.0
+            if use_sampler:
+                self.training_loader.sampler.set_epoch(epoch)
             for i, data in enumerate(self.training_loader, 0):
                 # get the inputs
                 inputs, labels = data
