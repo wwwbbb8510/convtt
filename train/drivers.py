@@ -206,9 +206,12 @@ class TorchDriver(BaseDriver):
         self._best_validation_epoch = 0
         for epoch in range(self.training_epoch):  # loop over the dataset multiple times
             self.optimiser.epoch()
+            logging.debug(
+                'training epoch {} --- lr : {}'.format(epoch, self.optimiser._optimiser.param_groups[0]['lr']))
             running_loss = 0.0
             if use_sampler:
                 self.training_loader.sampler.set_epoch(epoch)
+                logging.debug('training epoch {} --- set epoch as the random seed for training sampler'.format(epoch))
             for i, data in enumerate(self.training_loader, 0):
                 # get the inputs
                 inputs, labels = data
