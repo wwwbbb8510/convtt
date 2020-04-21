@@ -177,6 +177,8 @@ class TorchDriver(BaseDriver):
         self._test_loader = None
         self._test_batch_size = None
         self._best_validation_acc = None
+        self._training_loss_history = None
+        self._validation_acc_history = None
         self._best_validation_epoch = None
 
         # enable specified gpus
@@ -204,6 +206,8 @@ class TorchDriver(BaseDriver):
         epoch_steps = len(self.training_loader)
         self._best_validation_acc = 0
         self._best_validation_epoch = 0
+        self._training_loss_history = []
+        self._validation_acc_history = []
         for epoch in range(self.training_epoch):  # loop over the dataset multiple times
             self.optimiser.epoch()
             logging.debug(
@@ -230,6 +234,7 @@ class TorchDriver(BaseDriver):
                 running_loss += loss.item()
                 logging.debug('training progress --- epoch: {}, step: {}'.format(epoch, i)) if i % 100 == 0 else None
             logging.debug('epoch:{}, training_loss:{}'.format(epoch + 1, running_loss / epoch_steps))
+            self._training_loss_history.append(running_loss / epoch_steps)
             # Test the model every epoch on validation set along with outputting training accuracy
             if self.validation_loader is not None:
                 if eval_training_set:
@@ -237,6 +242,7 @@ class TorchDriver(BaseDriver):
                     self.print_topk_acc('training_acc', mean_training_accu, stddev_training_acccu, topk)
                 mean_validation_accu, stddev_validation_acccu = self.test_model(self.validation_loader, topk, gpu_id)
                 self.print_topk_acc('validation_acc', mean_validation_accu, stddev_validation_acccu, topk)
+                self._validation_acc_history.append(mean_validation_accu)
 
             # Test the model every epoch on test set if needed
             if test_per_epoch:
@@ -408,3 +414,23 @@ class TorchDriver(BaseDriver):
         :rtype: Module
         """
         return self._best_validation_epoch
+
+    @property
+    def training_loss_history(self):
+        """
+        training loss history getter
+        which contains all the training losses during the training process
+        :return: _training_loss_history
+        :rtype: list
+        """
+        return self._training_loss_history
+
+    @property
+    def validation_acc_history(self):
+        """
+        validation acc history getter
+        which contains all the validation accuracies during the training process
+        :return: _validation_acc_history
+        :rtype: list
+        """
+        return self._validation_acc_history
