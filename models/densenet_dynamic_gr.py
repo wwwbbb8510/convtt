@@ -268,22 +268,14 @@ class _DenseBlockDynamicGR(nn.Sequential):
             self.add_module('dense_layer_dynamic_gr_%d' % (i + 1), layer)
 
         # calculate the output features of last layer
-        num_connections = self.dict_backward_connections_by_layer['dense_layer_dynamic_gr_%d' % self.num_layers]
-        curr_num_input_features = self._arr_num_new_features[num_connections].sum() + growth_rate
+        curr_num_input_features = self._arr_num_new_features.sum()
         self._num_output_features = curr_num_input_features.item()
 
     def __repr__(self):
         str_repr = super(_DenseBlockDynamicGR, self).__repr__() + os.linesep
-        str_connection = self.dict_connections_by_layer['dense_layer_dynamic_gr_0']
-        str_repr += 'input connection: {}'.format(str_connection)
         str_repr += os.linesep
-        for i in range(self.num_layers):
-            curr_layer_index = i + 1
-            str_connection = self.dict_connections_by_layer['dense_layer_dynamic_gr_%d' % curr_layer_index]
-            str_repr += 'dynamic layer - {}'.format(curr_layer_index)
-            str_repr += os.linesep
-            str_repr += 'layer connection: {}'.format(str_connection)
-            str_repr += os.linesep
+        str_repr += 'dense block with dynamic growth rates - {}'.format(self._arr_num_new_features)
+        str_repr += os.linesep
 
         return str_repr
 
