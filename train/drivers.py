@@ -242,7 +242,7 @@ class TorchDriver(BaseDriver):
                     self.print_topk_acc('training_acc', mean_training_accu, stddev_training_acccu, topk)
                 mean_validation_accu, stddev_validation_acccu = self.test_model(self.validation_loader, topk, gpu_id)
                 self.print_topk_acc('validation_acc', mean_validation_accu, stddev_validation_acccu, topk)
-                self._validation_acc_history.append(mean_validation_accu)
+                self._validation_acc_history.append(mean_validation_accu[0])
 
             # Test the model every epoch on test set if needed
             if test_per_epoch:
@@ -324,7 +324,7 @@ class TorchDriver(BaseDriver):
             res = []
             for k in topk:
                 correct_k = correct[:k].view(-1).float().sum(0, keepdim=True)
-                res.append(correct_k.mul_(1 / batch_size)[0])
+                res.append((correct_k.mul_(1 / batch_size)[0]).item())
             return res
 
     def save_model(self, file_path):
